@@ -1,0 +1,12 @@
+Q. How do I delete uncovered code from my source automatically?
+  Q. How do I identify uncovered code?
+    A. pytest-cov reporter xml
+
+    I. We can see teh filename and lines (numbers and hits).  We know which
+    lines in which files were not hit.
+
+    If we delete from the bottom up (or just prepend with `#`), we can "erase"
+    all these.
+
+    Q. Is there a parser for pytest coverage xml?
+

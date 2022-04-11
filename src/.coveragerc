@@ -1,0 +1,5 @@
+[run]
+omit =
+  */__init__.py
+  */*_test.py
+  ./delete_uncovered/remove.py
