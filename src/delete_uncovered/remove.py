@@ -31,7 +31,7 @@ def get_uncovered(parsed_xml) -> List[Uncovered]:
 
 
 def adjust_line(line: str) -> str:
-    return f"# {line}"
+    return f"# uncovered -> {line}"
 
 
 def get_leading_space(line: str) -> str:
@@ -42,14 +42,13 @@ def get_leading_space(line: str) -> str:
     return ""
 
 
-def remove_uncovered(uncovered: List[Uncovered]):
+def remove_uncovered(uncovered: List[Uncovered], warn_only=False):
     for filename, line_numbers in uncovered:
 
         # fixed_filename = f"src/{filename}"
         fixed_filename = filename
         # if "integration" not in fixed_filename:
         #     continue
-        print(fixed_filename)
         with open(fixed_filename, "r", encoding="utf8") as file:
             lines = file.readlines()
             for n in line_numbers[::-1]:
@@ -58,12 +57,16 @@ def remove_uncovered(uncovered: List[Uncovered]):
                 original_line = lines[line_number_index]
                 leading_space = get_leading_space(original_line)
                 # lines[line_number_index : line_number_index + 1] = [
-                lines[line_number_index] = f"# {original_line}"
+                lines[line_number_index] = adjust_line(original_line)
                 # f"{leading_space}return\n",
                 # original_line,
         # print("".join(lines))
-        with open(filename, "w", encoding="utf8") as file:
-            file.writelines(lines)
+        if warn_only:
+            print(fixed_filename)
+            print(line_numbers)
+        else:
+            with open(filename, "w", encoding="utf8") as file:
+                file.writelines(lines)
 
 
 def time_to_int():
@@ -106,7 +109,7 @@ should_run = previous_coverage_ts is None or previous_coverage_ts < coverage_tim
 if should_run:
     tree = ET.parse(coverage_file_path)
     uncovered = get_uncovered(tree)
-    remove_uncovered(uncovered)
+    remove_uncovered(uncovered, warn_only=True)
     set_last_run(coverage_timestamp)
 else:
     # print(
