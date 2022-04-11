@@ -9,12 +9,11 @@ def get_line_numbers(class_node):
         line_numbers.append(int(line.attrib['number']))
     return line_numbers
 
-def get_uncovered(parsed_xml) -> List[Tuple[str, List[int]]]:
-    """
-    returns List[(file_path, List[line_number])]
-    """
+Uncovered = Tuple[str, List[int]]
+
+def get_uncovered(parsed_xml) -> List[Uncovered]:
     root = tree.getroot()
-    result: List[Tuple[str, List[int]]] = []
+    result: List[Uncovered] = []
 
     classes = root.findall(".//class")
     for class_node in classes:
@@ -25,17 +24,19 @@ def get_uncovered(parsed_xml) -> List[Tuple[str, List[int]]]:
 
     return result
 
+def adjust_line(line: str) -> str:
+    return f'# {line}'
 
-def remove_uncovered(uncovered):
-    # for each file
-    for filename in uncovered:
-        print(filename)
-        # open the file (for reading and writing)
-        with open(filename, 'rw') as file:
-            print(file)
-        # read lines
-        # prepend each line (from back to start)
-        # write file
+def remove_uncovered(uncovered: List[Uncovered]):
+    for filename, line_numbers in uncovered:
+        with open(filename, 'r', encoding='utf8') as file:
+            lines = file.readlines()
+            # TODO: go backward
+            for n in line_numbers:
+                lines[n - 1] = adjust_line(lines[n - 1])
+
+        with open(filename, 'w', encoding='utf8') as file:
+            file.writelines(lines)
 
 
 uncovered = get_uncovered(tree)

@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 def foo():
     print('not covered')
 
@@ -9,7 +7,7 @@ def bar():
     return 99
 
 def bingo():
-    pass
+    return 2
 
 def bango(maybe: bool) -> None:
     """meh
@@ -18,3 +16,6 @@ def bango(maybe: bool) -> None:
         print('horse')
     else:
         print('norse')
+
+def hello(name):
+    return f'Mr. {name}'
