@@ -22,11 +22,16 @@ def get_uncovered(parsed_xml) -> List[Uncovered]:
     root = tree.getroot()
     result: List[Uncovered] = []
     classes = root.findall(".//class")
+    files_to_fix = 0
+    lines_to_fix = 0
     for class_node in classes:
         filename = class_node.attrib["filename"]
         line_numbers = get_line_numbers(class_node)
         if len(line_numbers) > 0:
+            files_to_fix += 1
+            lines_to_fix += len(line_numbers)
             result.append((filename, line_numbers))
+    print(f"need cover: {files_to_fix} files, {lines_to_fix} lines")
     return result
 
 
@@ -44,11 +49,8 @@ def get_leading_space(line: str) -> str:
 
 def remove_uncovered(uncovered: List[Uncovered], warn_only=False):
     for filename, line_numbers in uncovered:
-
         # fixed_filename = f"src/{filename}"
         fixed_filename = filename
-        # if "integration" not in fixed_filename:
-        #     continue
         with open(fixed_filename, "r", encoding="utf8") as file:
             lines = file.readlines()
             for n in line_numbers[::-1]:
@@ -99,6 +101,12 @@ def get_run_time_from_coverage_file(coverage_file_path: pathlib.Path) -> int:
         raise Exception("Why is this running without a coverage file?")
 
 
+exit_code = sys.argv[1]
+if exit_code != "0":
+    # We get a code when pytest fails.  If it's green, we'll get '0'.
+    # Don't try to clean up code until we're green.
+    sys.exit(1)
+
 previous_coverage_ts = get_last_run()
 
 coverage_file_path = pathlib.Path("./coverage.xml")
@@ -109,7 +117,7 @@ should_run = previous_coverage_ts is None or previous_coverage_ts < coverage_tim
 if should_run:
     tree = ET.parse(coverage_file_path)
     uncovered = get_uncovered(tree)
-    remove_uncovered(uncovered, warn_only=True)
+    remove_uncovered(uncovered, warn_only=False)
     set_last_run(coverage_timestamp)
 else:
     # print(
